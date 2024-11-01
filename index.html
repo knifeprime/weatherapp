@@ -1,69 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Weather in App</title>
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="container my-5">
-      <h1 class="text-center title">Weather in</h1>
-      <form class="search-loaction">
-        <input
-          type="text"
-          name="city"
-          placeholder="What city?"
-          autocomplete="off"
-          class="form-control text-muted form-rounded p-4 shadow-sm"
-        />
-      </form>
-
-      <div class="card rounded my-3 shadow-lg d-none back-card">
-        <div class="card-top text-center">
-          <div class="city-name my-3">
-            <p>Abuja</p>
-            <span>...</span>
-          </div>
-          <img src="img/night_image.svg" alt="" class="card-img-top time" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <div class="wea">
+    <h1>Weather APP</h1>
+</div>
+    <div class="card">
+        <div class="search">
+            <input type="text" placeholder="enter city name" spellcheck="false">
+            <button><img src="images/search.png" alt="search icon"></button>
         </div>
-
-        <div class="card-body">
-          <div class="card-mid row">
-            <div class="col-8 text-center temp">
-              <span>30&deg;C</span>
-            </div>
-            <div class="col-4 condition-temp">
-              <p class="condition">Thunder Storm</p>
-              <p class="high">30&deg;C</p>
-              <p class="low">27&deg;C</p>
-            </div>
-          </div>
-
-          <div class="icon-container card shadow mx-auto">
-            <img src="img/cloud.svg" alt="" />
-          </div>
-          <div class="card-bottom px-5 py-4 row">
-            <div class="col text-center">
-              <p>30&deg;C</p>
-              <span>Feels Like</span>
-            </div>
-            <div class="col text-center">
-              <p>55%</p>
-              <span>Humidity</span>
-            </div>
-          </div>
+        <div class="error" style="display: none;">
+            <p>Invalid city name</p>
         </div>
-      </div>
+        <div class="weather">
+           <img src="images/rain.png" alt="search icon" class="weather-icon">
+            <h1 class="temp">22°C</h1>
+            <h2 class="city">new york</h2>
+            <div class="details">
+                <div class="col">
+                    <img src="images/humidity.png" alt="">
+                    <div>
+                        <p class="humidity">50%</p>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="images/wind.png" alt="">
+                    <div>
+                        <p class="wind">15km/h</p>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <script>
+        const apiKey = "98b824067592e9c790c8ed3dbe423d57";
+        
+        const searchBox = document.querySelector(".search input");
+        const searchBtn = document.querySelector(".search button");
+        const weatherIcon = document.querySelector(".weather-icon");
 
-    <script src="request.js"></script>
-    <script src="index.js"></script>
-  </body>
+        async function checkWeather(city) {
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?units=metric&q=${city}&appid=${apiKey}`);
+    
+    if (response.status == 404) {
+        document.querySelector(".error").style.display = "block";
+        document.querySelector(".weather").style.display = "none";
+    } else {
+        var data = await response.json();
+
+        document.querySelector(".city").innerHTML = data.name;
+        document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + "°C";
+        document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
+        document.querySelector(".wind").innerHTML = data.wind.speed + " km/h";
+        
+        // Hide error message if city is valid
+        document.querySelector(".error").style.display = "none";
+        
+        // Check weather and temperature to update weather icon
+        const mainCondition = data.weather[0].main;
+        const temp = data.main.temp;
+        
+        if (mainCondition == "Clouds") {
+            weatherIcon.src = "images/clouds.png";
+        } else if (mainCondition == "Clear") {
+            weatherIcon.src = "images/clear.png";
+        } else if (mainCondition == "Rain") {
+            weatherIcon.src = "images/rain.png";
+        } else if (mainCondition == "Drizzle") {
+            weatherIcon.src = "images/drizzle.png";
+        } else if (mainCondition == "Mist") {
+            weatherIcon.src = "images/mist.png";
+        } else if (mainCondition == "Snow" || temp <= 0) {
+            weatherIcon.src = "images/snow.png";
+        } else if (temp < 10) { // Display cold icon if temp is below 10°C
+            weatherIcon.src = "images/cold.png";
+        }
+
+        document.querySelector(".weather").style.display = "block";
+    }
+}
+
+        // Add event listener to search button
+        searchBtn.addEventListener("click", () => {
+            checkWeather(searchBox.value);
+        });
+
+        // Initial load for a default city
+        checkWeather("Bengaluru");
+    </script>
+</body>
 </html>
